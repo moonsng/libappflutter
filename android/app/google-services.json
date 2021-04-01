@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "774792720713",
+    "project_id": "lipappfcmtest",
+    "storage_bucket": "lipappfcmtest.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:774792720713:android:d0f26b3d97f3e45822aa98",
+        "android_client_info": {
+          "package_name": "com.lamilab.libapp_demo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "774792720713-o5me457v6tkckocmbt01e7hh7ptsa154.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB6y0fY2VcGWx2Cn5tdowVoquWXOCnRaC0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "774792720713-o5me457v6tkckocmbt01e7hh7ptsa154.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
