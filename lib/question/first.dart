@@ -11,9 +11,7 @@ class Question extends StatefulWidget {
 }
 
 class _Question extends State<Question> {
-
   Gender _gender = Gender.MAN;
-
   final _items = ['10대', '20대', '30대', '40대','50대','60대 이상'];
   var _selected = '10대';
 
@@ -34,7 +32,6 @@ class _Question extends State<Question> {
                 Text(
                   '1. 성별과 연령대를 알려주세요',
                   style: TextStyle(fontSize: 20.0, fontWeight: FontWeight.bold),
-
                 ),
                 SizedBox(
                   height: 100,

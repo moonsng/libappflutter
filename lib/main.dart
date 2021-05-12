@@ -14,20 +14,21 @@ import 'package:logger/logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:splashscreen/splashscreen.dart';
 
+import 'package:flutter/services.dart';
+import 'package:flutter_app_badger/flutter_app_badger.dart';
+
 final logger = Logger();
 final client = RestClient(Dio(BaseOptions(contentType: "application/json")));
 
 void main(){
   runApp(new MaterialApp(
-    home: new MyApp(),
+    home: new MainPage(),
   ));
 }
-
 void login(BuildContext context, String kakao_id, String password){
   client.login(UserInfo(kakao_id: kakao_id, password: password, fcm_token: "test"))
       .then((responseData) => loginSuccess(context, responseData.toJson()));
 }
-
 void loginSuccess(BuildContext context, Map<String, dynamic> data) async{
   String jwt = data["message"];
   UserInfo userInfo = UserInfo.fromJson(data["data"]["UserInfo"]);
@@ -42,17 +43,14 @@ void loginSuccess(BuildContext context, Map<String, dynamic> data) async{
     moveToMainPage(context);
   }
 }
-
 void moveToMainPage(BuildContext context){
   Navigator.of(context).pop();
   Navigator.of(context).push(MaterialPageRoute(builder: (context) => MainPage(title: 'main',)));
 }
-
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => new _MyAppState();
 }
-
 class _MyAppState extends State<MyApp> {
   final FirebaseMessaging _firebaseMessaging = FirebaseMessaging();
   static final FlutterKakaoLogin kakaoSignIn = FlutterKakaoLogin();
@@ -64,7 +62,6 @@ class _MyAppState extends State<MyApp> {
     }else {
       SharedPreferences pref = await SharedPreferences.getInstance();
       String userInfoString = pref.get("userInfo");
-
 
       if (userInfoString != null) { //내부저장소에 로그인 정보가 있을 경우 메인 페이지로 이동.
         //'1638364656'
@@ -84,12 +81,10 @@ class _MyAppState extends State<MyApp> {
       }
     }
   }
-
   void login(BuildContext context, String kakao_id, String password){
     client.login(UserInfo(kakao_id: kakao_id, password: password, fcm_token: "test"))
         .then((responseData) => loginSuccess(context, responseData.toJson()));
   }
-
   @override
   Widget build(BuildContext context) {
     return new SplashScreen(
@@ -168,8 +163,6 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-
 
 class KakaoLoginPage extends StatelessWidget {
 

@@ -1,10 +1,19 @@
+import 'dart:convert';
+import 'package:dio/dio.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:libapp_demo/model/bookInfoByIsbn.dart';
+import 'package:libapp_demo/rest/third_party_client.dart';
+import 'package:logger/logger.dart';
 import 'package:path/path.dart';
+import 'package:xml/xml.dart';
 
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
+import 'package:xml2json/xml2json.dart';
+
+final logger = Logger();
 
 class ThirdApp extends StatefulWidget {
   ThirdApp({Key key, this.title}) : super(key: key);
@@ -12,13 +21,12 @@ class ThirdApp extends StatefulWidget {
   @override
   _ThirdApp createState() => _ThirdApp();
 }
-
 class _ThirdApp extends State<ThirdApp> with SingleTickerProviderStateMixin {
   TabController controller;
-
   @override
   void initState() {
     super.initState();
+
     controller = TabController(length: 3, vsync: this);
     controller.addListener(() {
       if (!controller.indexIsChanging) {
@@ -28,7 +36,6 @@ class _ThirdApp extends State<ThirdApp> with SingleTickerProviderStateMixin {
       }
     });
   }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -40,7 +47,9 @@ class _ThirdApp extends State<ThirdApp> with SingleTickerProviderStateMixin {
           ],
           controller: controller,
         ),
-        appBar: new AppBar(
+        appBar: PreferredSize(
+          preferredSize: Size.fromHeight(90.0),
+         child: new AppBar(
             backgroundColor: Colors.teal[50],
             bottom: new TabBar(
               labelColor: Colors.teal,
@@ -61,20 +70,17 @@ class _ThirdApp extends State<ThirdApp> with SingleTickerProviderStateMixin {
                 ),
               ],
               controller: controller,
-            )));
+            ))));
   }
-
   @override
   void dispose() {
     controller.dispose();
     super.dispose();
   }
 }
-
 //전체서재 페이지
 class Mine extends StatelessWidget {
   final words = [];
-  String capitalize(String s) => s[0].toUpperCase() + s.substring(1);
 
   var switchValue = false;
   String test = '신청';
@@ -83,57 +89,32 @@ class Mine extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: ListView.builder(itemBuilder: (context, index) {
-        final disp_text = ' $index  ';
-
-        return Card(
-            child: Row(
-          children: <Widget>[
-            Container(
-              width: MediaQuery.of(context).size.width - 150,
-              child: Text(
-                '  $index',
-                style: TextStyle(
-                  fontSize: 21,
-                ),
-              ),
-            ),
-            OutlinedButton(
-              style: ButtonStyle(
-                foregroundColor: MaterialStateProperty.all(
-                  _color,
-                ),
-              ),
-              child: Text('$test'),
+      body: ListView.builder(
+        itemCount: 1,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text('도서데이터가져오기'),
+            onTap: (){
+              //내비게이터푸쉬로 다음 화면 넘기기, 데이터 넘기기
+            },
+            trailing: OutlinedButton(
+              //child: Text('신청'),
               onPressed: () {
-                showDialog(
-                    context: context,
-                    barrierDismissible: false, //바깥영역 터치시 닫을지 여부
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('신청완료!'),
-                        content: SingleChildScrollView(
-                          child: ListBody(
-                            children: [
-                              Text('공유서가에서 도서를 찾아가세요'),
-                            ],
-                          ),
-                        ),
-                        actions: <Widget>[
-                          FlatButton(
-                            child: Text('닫기'),
-                            onPressed: () {
-                              Navigator.pop(context);
-                            },
-                          ),
-                        ],
-                      );
-                    });
+                final snackBar = SnackBar(
+                 duration:Duration(seconds: 3),
+                 content: Text('공유 신청완료!'),
+                 action: SnackBarAction(
+                label: '닫기',
+                onPressed: (){},
+                ),
+                );
+                ScaffoldMessenger.of(context).showSnackBar(snackBar);
               },
-            )
-          ],
-        ));
-      }),
+              child: Text('신청'),
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -153,8 +134,7 @@ class Neighbor extends StatelessWidget {
           Center(
             child: Column(
               children: <Widget>[
-                FlatButton(
-                  color: Colors.teal[50],
+                TextButton(
                   child: Text('공유 신청 도서목록'),
                   onPressed: () {},
                 ),
@@ -166,31 +146,118 @@ class Neighbor extends StatelessWidget {
     );
   }
 }
+//공유목록 페이지
+class Share extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+final thidPartyClient = ThridPartyClient(Dio(BaseOptions(headers: {
+  'contentType': "application/xml",
+  'Access-Control-Allow-Origin': 'true',
+})));
 
-class Share extends StatelessWidget {
+class _MyAppState extends State<Share> {
+  int value = 1;
+  String title = '도서명';
+  String authors = ' 저자';
+  String publisher = '출판사';
+  String publication_year = '출판년도';
+  String bookImageURL = "이미지";
+
+  _addItem() {
+    setState(() {
+      value = value + 1;
+    });
+  }
+  @override
+  initState() {
+    super.initState();
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        home: Scaffold(
-            body: Builder(builder: (BuildContext context) {
-              return Container(
-                  alignment: Alignment.bottomRight,
-                  child: Flex(
-                      direction: Axis.vertical,
-                      mainAxisAlignment: MainAxisAlignment.end,
-                      children: <Widget>[
-                        FloatingActionButton(
-                            onPressed: () => scanBarcodeNormal(),
-                            child: Icon(Icons.camera_alt),
-                            backgroundColor: Colors.teal,
-                        ),
-                      ]));
-            })));
+      home: Scaffold(
+        backgroundColor: Colors.grey[300],
+        body: Container(
+          child: Center(
+              child: ListView.builder(
+               itemCount: this.value,
+               itemBuilder: (context, index) {
+              return Card(
+                child: Container(
+                  child: Row(
+                    children: <Widget>[
+                       Expanded(
+                        child: Image.network(
+                         bookImageURL.trim(),
+                         height: 100,
+                         width: 100,
+                         fit: BoxFit.contain,
+                       ),
+                      ),
+                      Column(
+                        children: <Widget>[
+                          Container(
+                            width: MediaQuery.of(context).size.width - 150,
+                            child: Text(
+                              title,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width - 150,
+                            child: Text(
+                              authors,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width - 150,
+                            child: Text(
+                              publisher,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          SizedBox(
+                            height: 10,
+                          ),
+                          Container(
+                            width: MediaQuery.of(context).size.width - 150,
+                            child: Text(
+                              publication_year,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          )),
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () => _scan(),
+          tooltip: 'scan',
+          child: const Icon(
+            Icons.camera_alt,
+          ),
+          backgroundColor: Colors.teal,
+        ),
+      ),
+    );
   }
 
-  Future<void> scanBarcodeNormal() async {
+  Future<void> _scan() async {
     String barcodeScanRes;
-    // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
           "#ff6666", "Cancel", true, ScanMode.BARCODE);
@@ -198,14 +265,30 @@ class Share extends StatelessWidget {
     } on PlatformException {
       barcodeScanRes = 'Failed to get platform version.';
     }
+    if (!mounted) return;
 
-    // If the widget was removed from the tree while the asynchronous platform
-    // message was in flight, we want to discard the reply rather than calling
-    // // setState to update our non-existent appearance.
-    // if (!mounted) return;
-    //
-    // setState(() {
-    //   _scanBarcode = barcodeScanRes;
-    //});
+    thidPartyClient
+        .getBookInfoByIsbn(
+            '1a720ade31df7d25f022cb0afe64a14f1d1827a4bc349887f5434fe48901cab0',
+            barcodeScanRes)
+        .then((value) => {parseBookData(value.toString())});
+  }
+
+  void parseBookData(String bookDataString) async {
+    final myTransformer = Xml2Json();
+    myTransformer.parse(bookDataString);
+    var json = myTransformer.toParker();
+    Map<String, dynamic> data = jsonDecode(json);
+    BookInfoByIsbn bookInfo =
+        BookInfoByIsbn.fromJson(data["response"]["detail"]["book"]);
+    logger.i(bookInfo.toJson());
+
+    setState(() {
+      title = bookInfo.bookname;
+      authors = bookInfo.authors;
+      publisher = bookInfo.publisher;
+      publication_year = bookInfo.publication_year;
+      bookImageURL = bookInfo.bookImageURL;
+    });
   }
 }

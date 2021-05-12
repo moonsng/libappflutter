@@ -75,9 +75,12 @@ class _Question_last extends State<Question_last> {
             OutlinedButton(
               child: Text('완료'),
               onPressed: () {
-                Navigator.popUntil(context, ModalRoute.withName("/"));
-                Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => MainPage(title:"MainPage")));
+                Navigator.pushAndRemoveUntil(context, MaterialPageRoute(
+                  builder: (BuildContext context)=>
+                      MainPage()),(route) => false);
+                // Navigator.popUntil(context, ModalRoute.withName("/"));
+                // Navigator.of(context).push(
+                //     MaterialPageRoute(builder: (context) => MainPage(title:"MainPage")));
               },
             ),
           ],

@@ -1,9 +1,8 @@
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:http/http.dart' as http;
-
+import 'package:url_launcher/url_launcher.dart';
 
 class SecondApp extends StatefulWidget {
   @override
@@ -11,6 +10,19 @@ class SecondApp extends StatefulWidget {
 }
 
 class _SecondApp extends State<SecondApp> {
+  launchButton(String buttonText, String url) {
+    return TextButton(
+      onPressed: () async {
+        if (await canLaunch(url)) {
+          await launch(url);
+        } else {
+          throw 'could not';
+        }
+      },
+      child: Text(buttonText),
+    );
+  }
+
   String result = '';
   TextEditingController _editingController;
   ScrollController _scrollController;
@@ -66,24 +78,26 @@ class _SecondApp extends State<SecondApp> {
                         width: 100,
                         fit: BoxFit.contain,
                       ),
-                      Column(
+                      Expanded(
+                      child:Column(
                         children: <Widget>[
-                          Container(
-                            width:
-                            MediaQuery.of(context).size.width - 150,
+                         Container(
+                           width:
+                           MediaQuery.of(context).size.width - 150,
                             child: Text(
                               data[index]['title'].toString(),
                               textAlign: TextAlign.center,
                             ),
                           ),
                           Text(
-                              '저자 : ${data[index]['authors'].toString()}'),
+                              '저자 : ${data[index]['authors'].toString()}'
+                          ),
                           Text(
-                              '가격 : ${data[index]['sale_price'].toString()}'),
-                          Text(
-                              '판매중 : ${data[index]['status'].toString()}'),
+                              '출판사 : ${data[index]['publisher'].toString()}'
+                          ),
                         ],
                       )
+                      ),
                     ],
                     mainAxisAlignment: MainAxisAlignment.start,
                   ),
